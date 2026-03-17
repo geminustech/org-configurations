@@ -1,0 +1,12 @@
+name: Enforce Company Email
+on: [pull_request]
+jobs:
+  check-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commit author email
+        uses: dguo/check-author-and-committer-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          author-email-regex: '^.*@geminustech\.com$'
+          committer-email-regex: '^.*@geminustech\.com$'
