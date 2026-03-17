@@ -1,12 +1,55 @@
-name: Enforce Company Email
+name: Enforce Company Email for committer
 on: [pull_request]
+
 jobs:
   check-email:
     runs-on: ubuntu-latest
     steps:
-      - name: Check commit author email
-        uses: dguo/check-author-and-committer-action@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          author-email-regex: '^.*@geminustech\.com$'
-          committer-email-regex: '^.*@geminustech\.com$'
+          fetch-depth: 0 # Fetch all history for the PR
+
+      - name: Validate commit emails
+        run: |
+          CORPORATE_DOMAIN="geminustech.com"
+ 
+          echo "Checking commits in this Pull Request..."
+          
+          # Get all commit hashes in this PR
+          # PRs base branch is usually 'origin/main' or 'origin/master'
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          
+          COMMITS=$(git log $BASE_SHA..$HEAD_SHA --format="%H")
+
+          HAS_ERRORS=false
+          
+          for COMMIT in $COMMITS; do
+            AUTHOR_EMAIL=$(git show -s --format='%ae' $COMMIT)
+            COMMITTER_EMAIL=$(git show -s --format='%ce' $COMMIT)
+            
+            echo "Checking commit $COMMIT:"
+            echo "Author: $AUTHOR_EMAIL"
+            echo "Committer: $COMMITTER_EMAIL"
+            
+            if [[ ! "$AUTHOR_EMAIL" == *"$CORPORATE_DOMAIN" ]]; then
+              echo "  ❌ ERROR: Author email $AUTHOR_EMAIL does not match @$CORPORATE_DOMAIN"
+              HAS_ERRORS=true
+            fi
+            
+            if [[ ! "$COMMITTER_EMAIL" == *"$CORPORATE_DOMAIN" ]]; then
+              echo "  ❌ ERROR: Committer email $COMMITTER_EMAIL does not match @$CORPORATE_DOMAIN"
+              HAS_ERRORS=true
+            fi
+          done
+
+          if [ "$HAS_ERRORS" = true ]; then
+            echo "Validation failed! PRs need to be raised using @$CORPORATE_DOMAIN email id."
+            echo "Please configure your git email:"
+            echo "git config user.email 'name@$CORPORATE_DOMAIN'"
+            echo "Then amend your commit: git commit --amend --reset-author"
+            exit 1
+          else
+            echo "✅ All commit emails match @$CORPORATE_DOMAIN"
+          fi
