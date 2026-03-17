@@ -45,7 +45,7 @@ jobs:
           done
 
           if [ "$HAS_ERRORS" = true ]; then
-            echo "Validation failed! PRs need to be raised using @$CORPORATE_DOMAIN email id."
+            echo "Validation failed! All the git commits created in the PR branch should be authored using your @$CORPORATE_DOMAIN email id."
             echo "Please configure your git email:"
             echo "git config user.email 'name@$CORPORATE_DOMAIN'"
             echo "Then amend your commit: git commit --amend --reset-author"
