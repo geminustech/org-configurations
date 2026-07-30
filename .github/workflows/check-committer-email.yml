@@ -24,7 +24,7 @@ jobs:
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
           
-          COMMITS=$(git log $BASE_SHA..$HEAD_SHA --format="%H")
+          COMMITS=$(git log --format="%H" $BASE_SHA..$HEAD_SHA)
 
           HAS_ERRORS=false
           
