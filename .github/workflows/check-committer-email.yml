@@ -1,5 +1,7 @@
 name: Enforce Company Email for committer
-on: [pull_request]
+on:
+  pull_request:
+  push:
 
 jobs:
   check-email:
