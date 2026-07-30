@@ -2,6 +2,7 @@ name: Enforce Company Email for committer
 on:
   pull_request:
   push:
+  workflow_call:
 
 jobs:
   check-email:
