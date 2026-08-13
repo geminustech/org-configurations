@@ -26,6 +26,11 @@ jobs:
             "@geminus.space"
           )
 
+          # List of explicitly allowed email addresses
+          ALLOWED_EMAILS=(
+            "noreply@github.com"
+          )
+
           echo "Event: ${{ github.event_name }}"
 
           #
@@ -69,10 +74,19 @@ jobs:
 
           #
           # Function to validate email against allowed domains
+          # or explicitly allowed email addresses
           #
           is_valid_email() {
             local email="$1"
 
+            # Check explicitly allowed email addresses
+            for allowed_email in "${ALLOWED_EMAILS[@]}"; do
+              if [[ "$email" == "$allowed_email" ]]; then
+                return 0
+              fi
+            done
+
+            # Check allowed domains
             for domain in "${ALLOWED_DOMAINS[@]}"; do
               if [[ "$email" == *"$domain" ]]; then
                 return 0
@@ -100,12 +114,12 @@ jobs:
             echo "Committer : $COMMITTER_EMAIL"
 
             if ! is_valid_email "$AUTHOR_EMAIL"; then
-              echo "❌ ERROR: Author email '$AUTHOR_EMAIL' is not from an approved corporate domain."
+              echo "❌ ERROR: Author email '$AUTHOR_EMAIL' is not approved."
               HAS_ERRORS=true
             fi
 
             if ! is_valid_email "$COMMITTER_EMAIL"; then
-              echo "❌ ERROR: Committer email '$COMMITTER_EMAIL' is not from an approved corporate domain."
+              echo "❌ ERROR: Committer email '$COMMITTER_EMAIL' is not approved."
               HAS_ERRORS=true
             fi
 
@@ -118,13 +132,19 @@ jobs:
             echo ""
             echo "Validation failed!"
             echo ""
-            echo "All Git commits must use one of the following email domains:"
+            echo "All Git commits must use one of the following approved email domains:"
             for domain in "${ALLOWED_DOMAINS[@]}"; do
               echo "  - $domain"
             done
 
             echo ""
-            echo "Configure Git using one of the approved email addresses:"
+            echo "Or one of the following explicitly approved email addresses:"
+            for email in "${ALLOWED_EMAILS[@]}"; do
+              echo "  - $email"
+            done
+
+            echo ""
+            echo "Configure Git using one of the approved corporate email addresses:"
             echo ""
 
             for domain in "${ALLOWED_DOMAINS[@]}"; do
@@ -143,4 +163,3 @@ jobs:
 
           echo ""
           echo "✅ All commit author and committer emails are valid."
-
