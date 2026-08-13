@@ -24,6 +24,7 @@ jobs:
           ALLOWED_DOMAINS=(
             "@geminustech.com"
             "@geminus.space"
+            "@users.noreply.github.com"
           )
 
           # List of explicitly allowed email addresses
